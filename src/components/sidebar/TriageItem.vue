@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { AlertCircle, CheckCircle2, XCircle } from 'lucide-vue-next';
 
-import type { MatchStatus } from '@/stores/useTriageStore.ts';
+import type { TriageStatus } from '@/stores/useTriageStore.ts';
 
 defineProps<{
   id: string;
@@ -9,7 +9,7 @@ defineProps<{
   lastName: string;
   dob: string;
   confidence: number;
-  status: MatchStatus;
+  status: TriageStatus;
   isActive: boolean;
 }>();
 
@@ -20,7 +20,7 @@ defineEmits(['select']);
   <button
     :aria-selected="isActive"
     :class="[
-      'group border-border block w-full border-b p-4 text-left transition-all outline-none',
+      'group border-border block w-full cursor-pointer border-b p-4 text-left transition-all outline-none',
       'hover:bg-slate-50 dark:hover:bg-slate-800/50',
       'focus-visible:ring-brand focus-visible:bg-slate-100 focus-visible:ring-2 focus-visible:ring-inset dark:focus-visible:bg-slate-800',
       isActive ? 'bg-brand/10 ring-brand z-10 ring-1 ring-inset' : 'bg-canvas',

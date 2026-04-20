@@ -1,16 +1,21 @@
 <script setup lang="ts">
-import { AlertCircle, Check, Info, RotateCcw, X } from 'lucide-vue-next';
+import { AlertCircle, Ban, Check, Info, RotateCcw, X } from 'lucide-vue-next';
 import { computed, nextTick, ref, watch } from 'vue';
 
 import { useTriageStore } from '@/stores/useTriageStore';
 import { isMatch, normalizeDate } from '@/utils/comparison';
 
+import TriageModal from './TriageModal.vue';
+
 const props = defineProps<{ matchId: string }>();
 const store = useTriageStore();
 const containerRef = ref<HTMLElement | null>(null);
+const triggerElement = ref<HTMLElement | null>(null);
 
 const match = computed(() => store.worklist.find((m) => m.id === props.matchId));
 const isReviewed = computed(() => match.value?.status !== 'unreviewed');
+const isModalOpen = ref(false);
+const modalMode = ref<'rejected' | 'follow-up' | null>(null);
 
 const fields: (keyof typeof match.value.external)[] = [
   'FirstName',
@@ -23,15 +28,39 @@ const fields: (keyof typeof match.value.external)[] = [
   'ZipCode',
 ];
 
-const handleDecision = (status: 'accepted' | 'rejected' | 'follow-up') => {
-  if (!match.value) return;
-  let note = '';
-  if (status === 'rejected') {
-    note = window.confirm("Is this a 'Not the same person' rejection?")
-      ? 'Not the same person'
-      : 'Changed PCP';
+const handleAccept = () => {
+  store.recordDecision(props.matchId, 'accepted');
+};
+
+const openDecisionModal = (mode: 'rejected' | 'follow-up') => {
+  triggerElement.value = document.activeElement as HTMLElement;
+  modalMode.value = mode;
+  isModalOpen.value = true;
+};
+
+const handleModalClose = async () => {
+  isModalOpen.value = false;
+  modalMode.value = null;
+
+  await nextTick();
+
+  if (triggerElement.value) {
+    triggerElement.value.focus();
   }
-  store.recordDecision(props.matchId, status, note);
+};
+
+const handleModalConfirm = (payload: {
+  status: 'rejected' | 'follow-up';
+  note?: string;
+  reason?: string;
+}) => {
+  console.log('what happen here?', payload);
+  store.recordDecision(props.matchId, payload.status, {
+    note: payload.note,
+    reason: payload.reason,
+  });
+  isModalOpen.value = false;
+  modalMode.value = null;
 };
 
 watch(
@@ -65,10 +94,10 @@ watch(
       :class="[
         'flex items-center justify-between border-b border-l-4 px-6 py-4 transition-all',
         match.status === 'accepted'
-          ? 'border-emerald-100 border-l-emerald-500 bg-emerald-50 text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300'
+          ? 'border-emerald-100 border-l-emerald-500 bg-emerald-50/30 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300'
           : match.status === 'rejected'
-            ? 'border-red-100 border-l-red-500 bg-red-50 text-red-800 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300'
-            : 'border-amber-100 border-l-amber-500 bg-amber-50 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300',
+            ? 'border-red-100 border-l-red-500 bg-red-50/30 text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300'
+            : 'border-amber-100 border-l-amber-500 bg-amber-50/30 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300',
       ]"
     >
       <div class="flex items-center gap-3 text-sm font-black tracking-widest uppercase">
@@ -148,39 +177,81 @@ watch(
       </div>
     </div>
     <div class="border-border bg-surface border-t p-6">
-      <div v-if="isReviewed" class="flex items-center justify-between">
-        <div class="text-ink-secondary flex items-center gap-2 text-sm italic">
-          <Info :size="14" />
-          Triaged on {{ new Date(match.decision?.timestamp || Date.now()).toLocaleDateString() }}
+      <div v-if="isReviewed" class="space-y-6">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div v-if="match.decision?.reason" class="flex flex-col gap-1.5">
+            <span class="text-ink-secondary text-[10px] font-black tracking-widest uppercase">
+              Resolution Reason
+            </span>
+            <div class="text-danger flex items-center gap-2 text-sm font-bold">
+              <Ban :size="14" />
+              {{ match.decision.reason }}
+            </div>
+          </div>
+          <div
+            v-if="match.decision?.note"
+            class="flex flex-col gap-1.5"
+            :class="{ 'col-span-full': !match.decision?.reason }"
+          >
+            <span class="text-ink-secondary text-[10px] font-black tracking-widest uppercase">
+              Nurse Narrative
+            </span>
+            <p class="text-ink-primary text-sm leading-relaxed italic">
+              "{{ match.decision.note }}"
+            </p>
+          </div>
+          <div
+            v-if="!match.decision?.note && !match.decision?.reason"
+            class="text-ink-secondary col-span-full text-sm italic"
+          >
+            Decision recorded without additional notes.
+          </div>
         </div>
-        <button
-          class="border-border text-ink-primary flex cursor-pointer items-center gap-2 rounded-md border px-6 py-2 text-sm font-bold transition-colors hover:bg-slate-50 dark:hover:bg-slate-800"
-          @click="store.undoDecision(match.id)"
-        >
-          <RotateCcw :size="14" />
-          Modify Decision
-        </button>
+        <div class="border-border flex items-center justify-between border-t pt-4">
+          <div
+            class="text-ink-secondary flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase"
+          >
+            <Info :size="12" />
+            Review Finalized •
+            {{ new Date(match.decision?.timestamp || Date.now()).toLocaleString() }}
+          </div>
+
+          <button
+            class="border-border text-ink-primary flex cursor-pointer items-center gap-2 rounded-md border bg-white px-6 py-2 text-sm font-bold shadow-sm transition-all hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700"
+            @click="store.undoDecision(match.id)"
+          >
+            <RotateCcw :size="14" />
+            Modify Decision
+          </button>
+        </div>
       </div>
       <div v-else class="flex justify-end gap-3">
         <button
           class="text-warning cursor-pointer rounded-md px-4 py-2 text-sm font-bold hover:bg-amber-50 dark:hover:bg-amber-950/30"
-          @click="handleDecision('follow-up')"
+          @click="openDecisionModal('follow-up')"
         >
           Needs Follow-up
         </button>
         <button
           class="text-danger cursor-pointer rounded-md px-4 py-2 text-sm font-bold hover:bg-red-50 dark:hover:bg-red-950/30"
-          @click="handleDecision('rejected')"
+          @click="openDecisionModal('rejected')"
         >
           Reject Match
         </button>
         <button
           class="bg-success cursor-pointer rounded-md px-6 py-2 text-sm font-bold text-white shadow-sm hover:bg-emerald-700"
-          @click="handleDecision('accepted')"
+          @click="handleAccept()"
         >
           Accept Match
         </button>
       </div>
     </div>
+    <TriageModal
+      :is-open="isModalOpen"
+      :mode="modalMode"
+      :patient-name="`${match.external.FirstName} ${match.external.LastName}`"
+      @close="handleModalClose"
+      @confirm="handleModalConfirm"
+    />
   </div>
 </template>

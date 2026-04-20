@@ -7,7 +7,7 @@ import internalData from '@/data/internal.json';
 import matchesData from '@/data/matches.json';
 
 // --- Types ---
-export type MatchStatus = 'unreviewed' | 'accepted' | 'rejected' | 'follow-up';
+export type TriageStatus = 'unreviewed' | 'accepted' | 'rejected' | 'follow-up';
 
 export interface Patient {
   FirstName: string;
@@ -21,7 +21,7 @@ export interface Patient {
 }
 
 export interface Decision {
-  status: MatchStatus;
+  status: TriageStatus;
   reason?: string;
   note?: string;
   timestamp: number;
@@ -41,7 +41,7 @@ export interface WorklistItem {
   confidence: number;
   internal: Patient;
   external: Patient;
-  status: MatchStatus;
+  status: TriageStatus;
   decision?: Decision;
 }
 
@@ -51,7 +51,7 @@ export const useTriageStore = defineStore('matches', () => {
   const decisions = useStorage<Record<string, Decision>>('hca-nurse-decisions', {});
   const selectedMatchId = ref<string | null>(null);
   const searchQuery = ref('');
-  const filterStatus = ref<MatchStatus | 'all'>('unreviewed');
+  const filterStatus = ref<TriageStatus | 'all'>('unreviewed');
   const sortOrder = ref<'asc' | 'desc'>('desc');
   const lastActionId = ref<string | null>(null);
 
@@ -122,8 +122,18 @@ export const useTriageStore = defineStore('matches', () => {
   });
 
   // --- ACTIONS ---
-  function recordDecision(id: string, status: MatchStatus, note?: string) {
-    decisions.value[id] = { status, note, timestamp: Date.now() };
+  function recordDecision(
+    id: string,
+    status: TriageStatus,
+    details?: { reason?: string; note?: string }
+  ) {
+    console.log('i truly do not understand what it do', details);
+    decisions.value[id] = {
+      status,
+      reason: details?.reason,
+      note: details?.note,
+      timestamp: Date.now(),
+    };
     lastActionId.value = id;
 
     const list = filteredWorklist.value;
