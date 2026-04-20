@@ -95,28 +95,26 @@ const handleDecision = (status: 'accepted' | 'rejected' | 'follow-up') => {
         >
           {{ field === 'DOB' ? normalizeDate(match.external[field]) : match.external[field] }}
         </div>
-
         <div class="col-span-5 border-t border-slate-100 px-2 py-3">
           {{ field === 'DOB' ? normalizeDate(match.internal[field]) : match.internal[field] }}
         </div>
       </template>
     </div>
-
     <div class="border-border mt-8 flex items-center justify-end gap-4 border-t pt-6">
       <button
-        class="text-warning flex items-center gap-2 rounded-md px-4 py-2 text-sm font-bold hover:bg-amber-50"
+        class="text-warning flex cursor-pointer items-center gap-2 rounded-md px-4 py-2 text-sm font-bold hover:bg-amber-50"
         @click="handleDecision('follow-up')"
       >
         <AlertCircle :size="18" /> Needs Follow-up
       </button>
       <button
-        class="text-danger flex items-center gap-2 rounded-md px-4 py-2 text-sm font-bold hover:bg-red-50"
+        class="text-danger flex cursor-pointer items-center gap-2 rounded-md px-4 py-2 text-sm font-bold hover:bg-red-50"
         @click="handleDecision('rejected')"
       >
         <X :size="18" /> Reject Match
       </button>
       <button
-        class="bg-success flex items-center gap-2 rounded-md px-6 py-2 text-sm font-bold text-white shadow-sm hover:bg-emerald-700"
+        class="bg-success flex cursor-pointer items-center gap-2 rounded-md px-6 py-2 text-sm font-bold text-white shadow-sm hover:bg-emerald-700"
         @click="handleDecision('accepted')"
       >
         <Check :size="18" /> Accept Match

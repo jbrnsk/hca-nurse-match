@@ -2,7 +2,7 @@
 import { Filter } from 'lucide-vue-next';
 
 import MatchReconciler from '@/components/MatchReconciler.vue';
-import TriageSidebar from '@/components/Sidebar/TriageSidebar.vue';
+import TriageSidebar from '@/components/sidebar/TriageSidebar.vue';
 import { useMatchStore } from '@/stores/useMatchStore';
 
 const store = useMatchStore();
