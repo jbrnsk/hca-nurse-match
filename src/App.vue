@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Filter } from 'lucide-vue-next';
+import { ChevronLeft, Filter } from 'lucide-vue-next';
 
 import TriageSidebar from '@/components/sidebar/TriageSidebar.vue';
 import TriageReconciler from '@/components/TriageReconciler.vue';
@@ -7,6 +7,10 @@ import UndoToast from '@/components/UndoToast.vue';
 import { useTriageStore } from '@/stores/useTriageStore.ts';
 
 const store = useTriageStore();
+
+const deselectPatient = () => {
+  store.selectedMatchId = null;
+};
 </script>
 
 <template>
@@ -27,25 +31,42 @@ const store = useTriageStore();
         </h1>
       </div>
     </header>
-    <div class="flex flex-1 flex-col overflow-hidden lg:flex-row">
+    <div class="flex flex-1 overflow-hidden">
       <TriageSidebar
-        class="border-border h-2/5 border-b lg:h-full lg:w-80 lg:border-r lg:border-b-0"
+        class="border-border w-full shrink-0 lg:w-80 lg:border-r"
+        :class="[store.selectedMatchId ? 'hidden lg:block' : 'block']"
       />
-      <main class="bg-canvas relative flex-1 overflow-y-auto">
-        <div v-if="store.selectedMatchId" class="mx-auto max-w-5xl p-4 lg:p-8">
-          <TriageReconciler :key="store.selectedMatchId" :match-id="store.selectedMatchId" />
+      <main
+        class="bg-canvas flex flex-1 flex-col overflow-hidden"
+        :class="[store.selectedMatchId ? 'flex' : 'hidden lg:flex']"
+      >
+        <div
+          v-if="store.selectedMatchId"
+          class="border-border shrink-0 border-b bg-white p-4 lg:hidden"
+        >
+          <button
+            class="text-brand flex items-center gap-2 text-sm font-bold"
+            @click="deselectPatient"
+          >
+            <ChevronLeft class="h-4 w-4" />
+            BACK TO PATIENT LIST
+          </button>
         </div>
-
+        <div
+          v-if="store.selectedMatchId"
+          :key="store.selectedMatchId"
+          class="flex-1 overflow-y-auto p-4 lg:p-8"
+        >
+          <div class="mx-auto max-w-5xl">
+            <TriageReconciler :match-id="store.selectedMatchId" />
+          </div>
+        </div>
         <div
           v-else
           class="text-ink-secondary flex h-full flex-col items-center justify-center p-12 text-center opacity-30"
         >
-          <div
-            class="mb-4 flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-current"
-          >
-            <Filter class="h-6 w-6" />
-          </div>
-          <p class="text-lg font-medium">Select a patient to begin reconciliation</p>
+          <Filter class="mb-4 h-16 w-16" />
+          <p class="text-lg font-medium">Select a patient to begin</p>
         </div>
       </main>
       <UndoToast />

@@ -87,7 +87,7 @@ watch(
 </script>
 
 <template>
-  <div v-if="match" ref="containerRef" class="bg-surface lg:flex lg:h-full lg:flex-col">
+  <div v-if="match" ref="containerRef" class="bg-surface mb-12 lg:flex lg:h-full lg:flex-col">
     <div
       v-if="isReviewed"
       :class="[
@@ -188,7 +188,6 @@ watch(
         </template>
       </div>
     </div>
-
     <div class="border-border bg-surface border-t p-4 lg:p-6">
       <div v-if="isReviewed" class="space-y-6">
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -223,7 +222,6 @@ watch(
             <Info :size="12" />
             Finalized • {{ new Date(match.decision?.timestamp || Date.now()).toLocaleString() }}
           </div>
-
           <button
             class="border-border text-ink-primary flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border bg-white px-6 py-2 text-sm font-bold shadow-sm transition-all hover:bg-slate-50 lg:w-auto dark:bg-slate-800 dark:hover:bg-slate-700"
             @click="store.undoDecision(match.id)"
@@ -233,7 +231,6 @@ watch(
           </button>
         </div>
       </div>
-
       <div v-else class="flex flex-col justify-end gap-3 lg:flex-row">
         <button
           class="text-warning cursor-pointer rounded-md px-4 py-3 text-sm font-bold hover:bg-amber-50 lg:py-2 dark:hover:bg-amber-950/30"
@@ -255,7 +252,6 @@ watch(
         </button>
       </div>
     </div>
-
     <TriageModal
       :is-open="isModalOpen"
       :mode="modalMode"
