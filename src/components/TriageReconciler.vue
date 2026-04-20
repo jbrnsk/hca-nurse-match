@@ -67,7 +67,9 @@ watch(
   async (newId) => {
     if (!newId) return;
 
-    if (window.innerWidth<1024>) {
+    const isLargeScreen = typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)');
+
+    if (!isLargeScreen || !isLargeScreen.matches) {
       return;
     }
 
