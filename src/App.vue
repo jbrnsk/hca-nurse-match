@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Search, Filter, CheckCircle2, XCircle, Clock } from 'lucide-vue-next';
+import { Search, Filter } from 'lucide-vue-next';
+import MatchReconciler from '@/components/MatchReconciler.vue';
 
 import { useMatchStore } from '@/stores/useMatchStore';
 
@@ -20,7 +21,6 @@ const store = useMatchStore();
         </h1>
       </div>
     </header>
-
     <div class="flex flex-1 overflow-hidden">
       <aside class="border-border bg-surface flex w-80 shrink-0 flex-col border-r">
         <div class="border-border space-y-3 border-b p-4">
@@ -45,7 +45,6 @@ const store = useMatchStore();
             <option value="follow-up">Needs Follow-up</option>
           </select>
         </div>
-
         <div class="flex-1 overflow-y-auto">
           <div
             v-for="match in store.filteredWorklist"
@@ -76,13 +75,10 @@ const store = useMatchStore();
           </div>
         </div>
       </aside>
-
-      <main class="flex-1 overflow-y-auto">
+      <main class="bg-canvas flex-1 overflow-y-auto">
         <div v-if="store.selectedMatchId" class="mx-auto max-w-5xl p-8">
-          <h2 class="mb-6 text-2xl font-bold">Review Suggested Match</h2>
-          <div class="grid grid-cols-2 gap-8"></div>
+          <MatchReconciler :key="store.selectedMatchId" :match-id="store.selectedMatchId" />
         </div>
-
         <div
           v-else
           class="text-ink-secondary flex h-full flex-col items-center justify-center p-12 text-center opacity-40"
