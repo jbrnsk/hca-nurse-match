@@ -1,0 +1,44 @@
+@import "tailwindcss" reference;
+
+:root {
+    --canvas: #f8fafc;
+    --surface: #ffffff;
+    --ink-primary: #0f172a;
+    --ink-secondary: #475569;
+    --brand: #2563eb;
+    --status-success: #059669;
+    --status-danger: #dc2626;
+    --status-warning: #d97706;
+    --border: #e2e8f0;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --canvas: #0f172a;
+        --surface: #1e293b;
+        --ink-primary: #f8fafc;
+        --ink-secondary: #94a3b8;
+        --brand: #3b82f6;
+        --status-success: #10b981;
+        --status-danger: #ef4444;
+        --status-warning: #fbbf24;
+        --border: #334155;
+    }
+}
+
+@theme {
+    --font-sans: 'Inter Variable', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono Variable', monospace;
+
+    --color-canvas: var(--canvas);
+    --color-surface: var(--surface);
+    --color-ink-primary: var(--ink-primary);
+    --color-ink-secondary: var(--ink-secondary);
+    --color-brand: var(--brand);
+    --color-success: var(--status-success);
+    --color-danger: var(--status-danger);
+    --color-warning: var(--status-warning);
+    --color-border: var(--border);
+
+    --spacing: 0.25rem;
+}
