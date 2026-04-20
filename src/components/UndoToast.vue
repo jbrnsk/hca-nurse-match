@@ -12,11 +12,8 @@ watch(
   () => store.lastActionId,
   async (newId) => {
     if (newId) {
-      // If it's already visible, we "pulse" it by briefly toggling or
-      // letting the :key change handle the transition.
       visible.value = true;
 
-      // Reset the auto-hide timer so every click gives you a fresh 6 seconds
       clearTimeout(timer);
       timer = setTimeout(() => {
         visible.value = false;

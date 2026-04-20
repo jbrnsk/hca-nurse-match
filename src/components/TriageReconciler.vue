@@ -39,18 +39,13 @@ watch(
   async (newId) => {
     if (!newId) return;
 
-    // 1. Wait for the data to swap
     await nextTick();
 
-    // 2. If the component was just mounted via v-if,
-    // we might need an extra beat for the Ref to populate
     if (!containerRef.value) {
       await nextTick();
     }
 
     if (containerRef.value) {
-      // 3. Use requestAnimationFrame to ensure the browser
-      // has finished the "click" event loop on the sidebar
       requestAnimationFrame(() => {
         const firstButton = containerRef.value?.querySelector('button');
         if (firstButton instanceof HTMLElement) {
@@ -59,7 +54,7 @@ watch(
       });
     }
   },
-  { immediate: true } // 4. Essential for the first patient selected
+  { immediate: true }
 );
 </script>
 

@@ -126,7 +126,6 @@ export const useTriageStore = defineStore('matches', () => {
     decisions.value[id] = { status, note, timestamp: Date.now() };
     lastActionId.value = id;
 
-    // Advance to next unreviewed item
     const list = filteredWorklist.value;
     const currentIndex = list.findIndex((m) => m.id === id);
     let next = list.slice(currentIndex + 1).find((m) => m.status === 'unreviewed');
@@ -164,7 +163,6 @@ export const useTriageStore = defineStore('matches', () => {
     }
   }
 
-  // Explicitly return everything you want exposed
   return {
     decisions,
     selectedMatchId,
