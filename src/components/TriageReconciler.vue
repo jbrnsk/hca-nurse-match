@@ -93,7 +93,11 @@ watch(
 </script>
 
 <template>
-  <div v-if="match" ref="containerRef" class="bg-surface mb-12 lg:flex lg:h-full lg:flex-col">
+  <div
+    v-if="match"
+    ref="containerRef"
+    class="bg-surface mb-8 lg:mb-0 lg:flex lg:h-full lg:flex-col"
+  >
     <div
       v-if="isReviewed"
       :class="[
