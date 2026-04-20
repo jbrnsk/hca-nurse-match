@@ -27,12 +27,15 @@ const store = useTriageStore();
         </h1>
       </div>
     </header>
-    <div class="flex flex-1 overflow-hidden">
-      <TriageSidebar />
+    <div class="flex flex-1 flex-col overflow-hidden lg:flex-row">
+      <TriageSidebar
+        class="border-border h-2/5 border-b lg:h-full lg:w-80 lg:border-r lg:border-b-0"
+      />
       <main class="bg-canvas relative flex-1 overflow-y-auto">
-        <div v-if="store.selectedMatchId" class="mx-auto max-w-5xl p-8">
+        <div v-if="store.selectedMatchId" class="mx-auto max-w-5xl p-4 lg:p-8">
           <TriageReconciler :key="store.selectedMatchId" :match-id="store.selectedMatchId" />
         </div>
+
         <div
           v-else
           class="text-ink-secondary flex h-full flex-col items-center justify-center p-12 text-center opacity-30"
@@ -43,7 +46,6 @@ const store = useTriageStore();
             <Filter class="h-6 w-6" />
           </div>
           <p class="text-lg font-medium">Select a patient to begin reconciliation</p>
-          <p class="text-sm">High-confidence matches are prioritized by default</p>
         </div>
       </main>
       <UndoToast />

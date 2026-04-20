@@ -31,44 +31,50 @@ const handleUndo = () => {
 
 <template>
   <Transition
-    enter-active-class="transform transition ease-out duration-200"
-    enter-from-class="translate-y-4 opacity-0 scale-95"
-    enter-to-class="translate-y-0 opacity-100 scale-100"
-    leave-active-class="transition ease-in duration-150"
-    leave-from-class="opacity-100 scale-100"
-    leave-to-class="opacity-0 scale-95"
+    enter-active-class="transform transition ease-out duration-300"
+    enter-from-class="translate-y-full opacity-0 lg:translate-y-4 lg:scale-95"
+    enter-to-class="translate-y-0 opacity-100 lg:scale-100"
+    leave-active-class="transition ease-in duration-200"
+    leave-from-class="opacity-100 lg:scale-100"
+    leave-to-class="opacity-0 lg:scale-95"
     mode="out-in"
   >
     <div
       v-if="visible"
       :key="store.lastActionId ?? 'initial'"
-      class="fixed bottom-8 left-1/2 z-50 -translate-x-1/2"
+      class="fixed right-0 bottom-0 left-0 z-[100] p-4 lg:right-auto lg:bottom-8 lg:left-1/2 lg:-translate-x-1/2 lg:p-0"
     >
       <div
-        class="flex items-center gap-6 rounded-xl border border-slate-200 bg-white px-5 py-3 text-slate-900 shadow-2xl backdrop-blur-md dark:border-slate-700/50 dark:bg-slate-900 dark:text-white"
+        class="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] backdrop-blur-md lg:justify-start lg:gap-6 lg:px-5 lg:shadow-2xl dark:border-slate-700/50 dark:bg-slate-900 dark:text-white"
       >
         <div class="flex flex-col">
           <span
-            class="text-brand dark:text-brand-light/70 text-[10px] font-black tracking-widest uppercase"
+            class="text-brand dark:text-brand-light/70 text-[9px] font-black tracking-widest uppercase lg:text-[10px]"
           >
             Action Recorded
           </span>
-          <span class="text-sm font-bold">Entry triaged successfully</span>
+          <span class="truncate text-xs font-bold lg:text-sm">Entry triaged</span>
         </div>
-        <div class="h-8 w-px bg-slate-200 dark:bg-slate-700"></div>
-        <button
-          class="group text-brand hover:text-brand-dark flex cursor-pointer items-center gap-2 text-xs font-black tracking-widest uppercase transition-colors dark:hover:text-white"
-          @click="handleUndo"
-        >
-          <RotateCcw class="h-4 w-4 transition-transform group-hover:-rotate-45" />
-          Undo
-        </button>
-        <button
-          class="cursor-pointer text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-white"
-          @click="visible = false"
-        >
-          <X class="h-4 w-4" />
-        </button>
+
+        <div class="hidden h-8 w-px bg-slate-200 sm:block dark:bg-slate-700"></div>
+
+        <div class="flex items-center gap-3 lg:gap-4">
+          <button
+            class="group text-brand hover:text-brand-dark flex cursor-pointer items-center gap-2 text-[10px] font-black tracking-widest uppercase transition-colors lg:text-xs dark:hover:text-white"
+            @click="handleUndo"
+          >
+            <RotateCcw
+              class="h-3.5 w-3.5 transition-transform group-hover:-rotate-45 lg:h-4 lg:w-4"
+            />
+            Undo
+          </button>
+          <button
+            class="cursor-point p-1 text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-white"
+            @click="visible = false"
+          >
+            <X class="h-4 w-4" />
+          </button>
+        </div>
       </div>
     </div>
   </Transition>
