@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { AlertCircle, Check, RotateCcw, X } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { AlertCircle, Check, Info, RotateCcw, X } from 'lucide-vue-next';
+import { computed, nextTick, ref, watch } from 'vue';
 
-import { useMatchStore } from '@/stores/useMatchStore';
+import { useTriageStore } from '@/stores/useTriageStore';
 import { isMatch, normalizeDate } from '@/utils/comparison';
 
 const props = defineProps<{ matchId: string }>();
-const store = useMatchStore();
+const store = useTriageStore();
+const containerRef = ref<HTMLElement | null>(null);
 
 const match = computed(() => store.worklist.find((m) => m.id === props.matchId));
+const isReviewed = computed(() => match.value?.status !== 'unreviewed');
 
 const fields: (keyof typeof match.value.external)[] = [
   'FirstName',
@@ -23,103 +25,167 @@ const fields: (keyof typeof match.value.external)[] = [
 
 const handleDecision = (status: 'accepted' | 'rejected' | 'follow-up') => {
   if (!match.value) return;
-
   let note = '';
   if (status === 'rejected') {
-    note = window.confirm("Is this a 'Not the same person' rejection? (Cancel for 'Changed PCP')")
+    note = window.confirm("Is this a 'Not the same person' rejection?")
       ? 'Not the same person'
-      : 'Patient changed PCP/clinic';
+      : 'Changed PCP';
   }
-
   store.recordDecision(props.matchId, status, note);
 };
+
+watch(
+  () => props.matchId,
+  async (newId) => {
+    if (!newId) return;
+
+    // 1. Wait for the data to swap
+    await nextTick();
+
+    // 2. If the component was just mounted via v-if,
+    // we might need an extra beat for the Ref to populate
+    if (!containerRef.value) {
+      await nextTick();
+    }
+
+    if (containerRef.value) {
+      // 3. Use requestAnimationFrame to ensure the browser
+      // has finished the "click" event loop on the sidebar
+      requestAnimationFrame(() => {
+        const firstButton = containerRef.value?.querySelector('button');
+        if (firstButton instanceof HTMLElement) {
+          firstButton.focus();
+        }
+      });
+    }
+  },
+  { immediate: true } // 4. Essential for the first patient selected
+);
 </script>
 
 <template>
-  <div v-if="match" class="space-y-6 p-6">
-    <div class="border-border flex items-center justify-between border-b pb-4">
-      <div>
-        <h2 class="text-ink-primary text-xl font-bold">Patient Comparison</h2>
-        <p class="text-ink-secondary text-sm">
-          Comparing External (Clinic) vs. Internal (Hospital)
-        </p>
+  <div v-if="match" ref="containerRef" class="bg-surface flex h-full flex-col">
+    <div
+      v-if="isReviewed"
+      :class="[
+        'flex items-center justify-between border-b border-l-4 px-6 py-4 transition-all',
+        match.status === 'accepted'
+          ? 'border-emerald-100 border-l-emerald-500 bg-emerald-50 text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300'
+          : match.status === 'rejected'
+            ? 'border-red-100 border-l-red-500 bg-red-50 text-red-800 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300'
+            : 'border-amber-100 border-l-amber-500 bg-amber-50 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300',
+      ]"
+    >
+      <div class="flex items-center gap-3 text-sm font-black tracking-widest uppercase">
+        <Check v-if="match.status === 'accepted'" :size="18" stroke-width="3" />
+        <X v-if="match.status === 'rejected'" :size="18" stroke-width="3" />
+        <AlertCircle v-if="match.status === 'follow-up'" :size="18" stroke-width="3" />
+        Decision: {{ match.status }}
       </div>
-      <div class="flex items-center gap-4">
+      <div class="text-[10px] font-black tracking-tighter uppercase opacity-60">
+        Review Finalized
+      </div>
+    </div>
+    <div
+      class="flex-1 space-y-8 overflow-y-auto p-8"
+      :class="{ 'pointer-events-none opacity-90 select-none': isReviewed }"
+    >
+      <div class="border-border flex items-center justify-between border-b pb-6">
+        <div>
+          <h2 class="text-ink-primary text-2xl font-black tracking-tight">
+            Patient Reconciliation
+          </h2>
+          <p class="text-ink-secondary text-sm">Verify data consistency between records.</p>
+        </div>
         <div class="text-right">
           <p class="text-ink-secondary text-[10px] font-bold tracking-widest uppercase">
-            Confidence
+            Match Confidence
           </p>
-          <p class="text-brand font-mono text-lg font-bold">
+          <p class="text-brand font-mono text-2xl font-black">
             {{ (match.confidence * 100).toFixed(1) }}%
           </p>
         </div>
-        <button
-          v-if="match.status !== 'unreviewed'"
-          class="text-ink-secondary hover:text-brand flex items-center gap-2 text-xs font-bold uppercase"
-          @click="store.undoLastAction()"
+      </div>
+      <div class="grid grid-cols-12 gap-x-4 text-sm">
+        <div
+          class="text-ink-secondary col-span-2 pb-4 text-[10px] font-black tracking-widest uppercase"
         >
-          <RotateCcw :size="14" /> Undo Decision
-        </button>
-      </div>
-    </div>
-    <div class="grid grid-cols-12 gap-x-4 text-sm">
-      <div
-        class="text-ink-secondary col-span-2 pb-2 text-[10px] font-bold tracking-wider uppercase"
-      >
-        Field
-      </div>
-      <div
-        class="text-ink-secondary col-span-5 pb-2 text-[10px] font-bold tracking-wider uppercase"
-      >
-        Clinic Record (Ext)
-      </div>
-      <div
-        class="text-ink-secondary col-span-5 pb-2 text-[10px] font-bold tracking-wider uppercase"
-      >
-        Hospital Record (Int)
-      </div>
-      <template v-for="field in fields" :key="field">
-        <div class="text-ink-secondary col-span-2 border-t border-slate-100 py-3 font-medium">
-          {{ field }}
+          Field
         </div>
         <div
-          class="col-span-5 border-t border-slate-100 px-2 py-3"
-          :class="
-            !isMatch(field, match.external[field], match.internal[field])
-              ? 'text-danger bg-red-50 font-bold'
-              : 'text-ink-primary'
-          "
+          class="text-ink-secondary col-span-5 pb-4 text-[10px] font-black tracking-widest uppercase"
         >
-          {{
-            field === 'DOB' ? normalizeDate(match.external[field] as string) : match.external[field]
-          }}
+          Clinic Record (Ext)
         </div>
-        <div class="text-ink-primary col-span-5 border-t border-slate-100 px-2 py-3">
-          {{
-            field === 'DOB' ? normalizeDate(match.internal[field] as string) : match.internal[field]
-          }}
+        <div
+          class="text-ink-secondary col-span-5 pb-4 text-[10px] font-black tracking-widest uppercase"
+        >
+          Hospital Record (Int)
         </div>
-      </template>
+        <template v-for="field in fields" :key="field">
+          <div
+            class="border-border text-ink-secondary col-span-2 border-t py-4 text-[11px] font-bold uppercase"
+          >
+            {{ field }}
+          </div>
+          <div
+            class="border-border col-span-5 border-t px-3 py-4 transition-colors"
+            :class="
+              !isMatch(field, match.external[field], match.internal[field])
+                ? 'bg-danger/10 text-danger border-l-danger border-l-2 font-bold dark:bg-red-500/20 dark:text-red-400'
+                : 'text-ink-primary'
+            "
+          >
+            {{
+              field === 'DOB'
+                ? normalizeDate(match.external[field] as string)
+                : match.external[field]
+            }}
+          </div>
+          <div class="border-border text-ink-primary col-span-5 border-t px-3 py-4">
+            {{
+              field === 'DOB'
+                ? normalizeDate(match.internal[field] as string)
+                : match.internal[field]
+            }}
+          </div>
+        </template>
+      </div>
     </div>
-    <div class="border-border flex items-center justify-end gap-3 border-t pt-6">
-      <button
-        class="text-warning flex cursor-pointer items-center gap-2 rounded-md px-4 py-2 text-sm font-bold hover:bg-amber-50"
-        @click="handleDecision('follow-up')"
-      >
-        <AlertCircle :size="18" /> Needs Follow-up
-      </button>
-      <button
-        class="text-danger flex cursor-pointer items-center gap-2 rounded-md px-4 py-2 text-sm font-bold hover:bg-red-50"
-        @click="handleDecision('rejected')"
-      >
-        <X :size="18" /> Reject Match
-      </button>
-      <button
-        class="bg-success flex cursor-pointer items-center gap-2 rounded-md px-6 py-2 text-sm font-bold text-white hover:bg-emerald-700"
-        @click="handleDecision('accepted')"
-      >
-        <Check :size="18" /> Accept Match
-      </button>
+    <div class="border-border bg-surface border-t p-6">
+      <div v-if="isReviewed" class="flex items-center justify-between">
+        <div class="text-ink-secondary flex items-center gap-2 text-sm italic">
+          <Info :size="14" />
+          Triaged on {{ new Date(match.decision?.timestamp || Date.now()).toLocaleDateString() }}
+        </div>
+        <button
+          class="border-border text-ink-primary flex cursor-pointer items-center gap-2 rounded-md border px-6 py-2 text-sm font-bold transition-colors hover:bg-slate-50 dark:hover:bg-slate-800"
+          @click="store.undoDecision(match.id)"
+        >
+          <RotateCcw :size="14" />
+          Modify Decision
+        </button>
+      </div>
+      <div v-else class="flex justify-end gap-3">
+        <button
+          class="text-warning cursor-pointer rounded-md px-4 py-2 text-sm font-bold hover:bg-amber-50 dark:hover:bg-amber-950/30"
+          @click="handleDecision('follow-up')"
+        >
+          Needs Follow-up
+        </button>
+        <button
+          class="text-danger cursor-pointer rounded-md px-4 py-2 text-sm font-bold hover:bg-red-50 dark:hover:bg-red-950/30"
+          @click="handleDecision('rejected')"
+        >
+          Reject Match
+        </button>
+        <button
+          class="bg-success cursor-pointer rounded-md px-6 py-2 text-sm font-bold text-white shadow-sm hover:bg-emerald-700"
+          @click="handleDecision('accepted')"
+        >
+          Accept Match
+        </button>
+      </div>
     </div>
   </div>
 </template>

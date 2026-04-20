@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useMatchStore } from '@/stores/useMatchStore';
-const store = useMatchStore();
+import { useTriageStore } from '@/stores/useTriageStore.ts';
+const store = useTriageStore();
 </script>
 
 <template>

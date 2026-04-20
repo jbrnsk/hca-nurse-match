@@ -4,9 +4,9 @@ import { Filter } from 'lucide-vue-next';
 import TriageSidebar from '@/components/sidebar/TriageSidebar.vue';
 import TriageReconciler from '@/components/TriageReconciler.vue';
 import UndoToast from '@/components/UndoToast.vue';
-import { useMatchStore } from '@/stores/useMatchStore';
+import { useTriageStore } from '@/stores/useTriageStore.ts';
 
-const store = useMatchStore();
+const store = useTriageStore();
 </script>
 
 <template>

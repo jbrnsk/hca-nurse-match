@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { useMatchStore } from '@/stores/useMatchStore';
+import { useTriageStore } from '@/stores/useTriageStore.ts';
 
 import TriageControls from './TriageControls.vue';
 import TriageItem from './TriageItem.vue';
 import TriageStats from './TriageStats.vue';
 
-const store = useMatchStore();
+const store = useTriageStore();
 </script>
 
 <template>

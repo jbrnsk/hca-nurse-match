@@ -46,7 +46,7 @@ export interface WorklistItem {
 }
 
 // --- The Store ---
-export const useMatchStore = defineStore('matches', () => {
+export const useTriageStore = defineStore('matches', () => {
   // --- STATE ---
   const decisions = useStorage<Record<string, Decision>>('hca-nurse-decisions', {});
   const selectedMatchId = ref<string | null>(null);
@@ -138,6 +138,16 @@ export const useMatchStore = defineStore('matches', () => {
     selectedMatchId.value = next ? next.id : null;
   }
 
+  function undoDecision(id: string) {
+    delete decisions.value[id];
+
+    selectedMatchId.value = id;
+
+    if (lastActionId.value === id) {
+      lastActionId.value = null;
+    }
+  }
+
   function undoLastAction() {
     if (!lastActionId.value) return;
     const idToUndo = lastActionId.value;
@@ -167,6 +177,7 @@ export const useMatchStore = defineStore('matches', () => {
     selectedMatch,
     progress,
     recordDecision,
+    undoDecision,
     undoLastAction,
     resetAll,
   };

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ArrowUpDown, Search } from 'lucide-vue-next';
 
-import { useMatchStore } from '@/stores/useMatchStore';
+import { useTriageStore } from '@/stores/useTriageStore.ts';
 
-const store = useMatchStore();
+const store = useTriageStore();
 </script>
 
 <template>
@@ -12,7 +12,7 @@ const store = useMatchStore();
       <Search class="text-ink-secondary absolute top-3 left-3 h-4 w-4" />
       <input
         v-model="store.searchQuery"
-        class="border-border bg-canvas focus:ring-brand h-10 w-full rounded-md border pr-4 pl-10 text-sm transition-all outline-none focus:ring-1"
+        class="border-border bg-canvas focus:border-brand focus:ring-brand/20 h-10 w-full rounded-md border pr-4 pl-10 text-sm transition-all outline-none focus:ring-4"
         placeholder="Search name or DOB..."
         type="text"
       />
@@ -20,7 +20,7 @@ const store = useMatchStore();
     <div class="flex gap-3">
       <select
         v-model="store.filterStatus"
-        class="border-border bg-canvas focus:ring-brand h-10 flex-1 cursor-pointer rounded-md border px-3 text-sm font-medium transition-all outline-none focus:ring-1"
+        class="border-border bg-canvas focus:border-brand focus:ring-brand/20 h-10 flex-1 cursor-pointer rounded-md border px-3 text-sm font-medium transition-all outline-none focus:ring-4"
       >
         <option value="all">All Records</option>
         <option value="unreviewed">Unreviewed</option>
@@ -29,7 +29,7 @@ const store = useMatchStore();
         <option value="follow-up">Needs Follow-up</option>
       </select>
       <button
-        class="border-border bg-canvas focus:ring-brand flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-md border transition-colors hover:bg-slate-50 focus:ring-1 dark:hover:bg-slate-800/50"
+        class="border-border bg-canvas focus:border-brand focus:ring-brand/20 flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-md border transition-all hover:bg-slate-50 focus:ring-4 dark:hover:bg-slate-800/50"
         title="Toggle Sort Order"
         @click="store.sortOrder = store.sortOrder === 'desc' ? 'asc' : 'desc'"
       >
