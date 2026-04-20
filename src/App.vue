@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Filter } from 'lucide-vue-next';
 
-import MatchReconciler from '@/components/MatchReconciler.vue';
 import TriageSidebar from '@/components/sidebar/TriageSidebar.vue';
+import TriageReconciler from '@/components/TriageReconciler.vue';
+import UndoToast from '@/components/UndoToast.vue';
 import { useMatchStore } from '@/stores/useMatchStore';
 
 const store = useMatchStore();
@@ -30,7 +31,7 @@ const store = useMatchStore();
       <TriageSidebar />
       <main class="bg-canvas relative flex-1 overflow-y-auto">
         <div v-if="store.selectedMatchId" class="mx-auto max-w-5xl p-8">
-          <MatchReconciler :key="store.selectedMatchId" :match-id="store.selectedMatchId" />
+          <TriageReconciler :key="store.selectedMatchId" :match-id="store.selectedMatchId" />
         </div>
         <div
           v-else
@@ -45,6 +46,7 @@ const store = useMatchStore();
           <p class="text-sm">High-confidence matches are prioritized by default</p>
         </div>
       </main>
+      <UndoToast />
     </div>
   </div>
 </template>
