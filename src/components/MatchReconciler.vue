@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { AlertCircle, Check, RotateCcw, X } from 'lucide-vue-next';
 import { computed } from 'vue';
-import { useMatchStore, type Patient } from '@/stores/useMatchStore';
+
+import { type Patient, useMatchStore } from '@/stores/useMatchStore';
 import { isMatch, normalizeDate } from '@/utils/comparison';
-import { Check, X, AlertCircle, RotateCcw } from 'lucide-vue-next';
 
 const props = defineProps<{ matchId: string }>();
 const store = useMatchStore();
@@ -54,8 +55,8 @@ const handleDecision = (status: 'accepted' | 'rejected' | 'follow-up') => {
         </div>
         <button
           v-if="match.status !== 'unreviewed'"
-          @click="store.undoDecision(match.id)"
           class="text-ink-secondary hover:text-brand flex items-center gap-2 text-xs font-bold tracking-wider uppercase"
+          @click="store.undoDecision(match.id)"
         >
           <RotateCcw :size="14" /> Undo Decision
         </button>
@@ -103,20 +104,20 @@ const handleDecision = (status: 'accepted' | 'rejected' | 'follow-up') => {
 
     <div class="border-border mt-8 flex items-center justify-end gap-4 border-t pt-6">
       <button
-        @click="handleDecision('follow-up')"
         class="text-warning flex items-center gap-2 rounded-md px-4 py-2 text-sm font-bold hover:bg-amber-50"
+        @click="handleDecision('follow-up')"
       >
         <AlertCircle :size="18" /> Needs Follow-up
       </button>
       <button
-        @click="handleDecision('rejected')"
         class="text-danger flex items-center gap-2 rounded-md px-4 py-2 text-sm font-bold hover:bg-red-50"
+        @click="handleDecision('rejected')"
       >
         <X :size="18" /> Reject Match
       </button>
       <button
-        @click="handleDecision('accepted')"
         class="bg-success flex items-center gap-2 rounded-md px-6 py-2 text-sm font-bold text-white shadow-sm hover:bg-emerald-700"
+        @click="handleDecision('accepted')"
       >
         <Check :size="18" /> Accept Match
       </button>

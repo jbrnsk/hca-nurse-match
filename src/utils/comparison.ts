@@ -16,7 +16,7 @@ export const normalizeDate = (dateStr: string) => {
 /**
  * Checks if two values are "effectively" the same after normalization.
  */
-export const isMatch = (key: string, val1: any, val2: any) => {
+export const isMatch = (key: string, val1: unknown, val2: unknown) => {
   if (!val1 || !val2) return false;
 
   const s1 = String(val1).trim().toLowerCase();

@@ -1,9 +1,10 @@
-import internalData from '@/data/internal.json';
-import externalData from '@/data/external.json';
-import matchesData from '@/data/matches.json';
-import { defineStore } from 'pinia';
-import { ref } from 'vue';
 import { useStorage } from '@vueuse/core';
+import { defineStore } from 'pinia';
+
+import externalData from '@/data/external.json';
+import internalData from '@/data/internal.json';
+import matchesData from '@/data/matches.json';
+
 // --- Types ---
 export type MatchStatus = 'unreviewed' | 'accepted' | 'rejected' | 'follow-up';
 
@@ -15,7 +16,7 @@ export interface Patient {
   PhoneNumber: string;
   Address: string;
   City: string;
-  ZipCode: string;
+  ZipCode: string | number;
 }
 
 export interface Decision {
@@ -25,23 +26,42 @@ export interface Decision {
   timestamp: number;
 }
 
+export interface RawInternalPatient extends Patient {
+  InternalPatientId: string;
+}
+
+export interface RawExternalPatient extends Patient {
+  ExternalPatientId: string;
+}
+
+export interface WorklistItem {
+  id: string;
+  internalId: string;
+  confidence: number;
+  internal: Patient;
+  external: Patient;
+  status: MatchStatus;
+  decision?: Decision;
+}
+
 // --- The Store ---
 export const useMatchStore = defineStore('matches', {
   state: () => ({
     decisions: useStorage<Record<string, Decision>>('hca-nurse-decisions', {}),
-    selectedMatchId: ref<string | null>(null),
+    selectedMatchId: null as string | null,
     searchQuery: '',
     filterStatus: 'unreviewed' as MatchStatus | 'all',
+    sortOrder: 'desc' as 'asc' | 'desc',
   }),
 
   getters: {
-    worklist: (state) => {
+    worklist(state): WorklistItem[] {
       return matchesData.map((m) => {
-        const internal = (internalData as any).find(
-          (p: any) => p.InternalPatientId === m.InternalPatientId
+        const internal = (internalData as RawInternalPatient[]).find(
+          (p: RawInternalPatient) => p.InternalPatientId === m.InternalPatientId
         );
-        const external = (externalData as any).find(
-          (p: any) => p.ExternalPatientId === m.ExternalPatientId
+        const external = (externalData as RawExternalPatient[]).find(
+          (p: RawExternalPatient) => p.ExternalPatientId === m.ExternalPatientId
         );
         const decision = state.decisions[m.ExternalPatientId];
 
@@ -57,15 +77,15 @@ export const useMatchStore = defineStore('matches', {
       });
     },
 
-    filteredWorklist(): any[] {
-      let list = this.worklist;
+    filteredWorklist(): WorklistItem[] {
+      let list = [...this.worklist];
 
       // 1. Filter by Status
       if (this.filterStatus !== 'all') {
         list = list.filter((m) => m.status === this.filterStatus);
       }
 
-      // 2. Search by Name or DOB (Both rosters)
+      // 2. Search by Name or DOB
       if (this.searchQuery.trim()) {
         const query = this.searchQuery.toLowerCase();
         list = list.filter((m) => {
@@ -79,13 +99,26 @@ export const useMatchStore = defineStore('matches', {
           ]
             .join(' ')
             .toLowerCase();
-
           return matchTarget.includes(query);
         });
       }
 
-      // 3. Sort by Confidence (High -> Low)
-      return list.sort((a, b) => b.confidence - a.confidence);
+      // 3. AC: Dynamic Sort of Confidence
+      return list.sort((a, b) => {
+        return this.sortOrder === 'desc'
+          ? b.confidence - a.confidence
+          : a.confidence - b.confidence;
+      });
+    },
+
+    progress(state) {
+      const total = matchesData.length;
+      const reviewed = Object.keys(state.decisions).length;
+      return {
+        total,
+        reviewed,
+        percent: Math.round((reviewed / total) * 100),
+      };
     },
   },
 
@@ -94,7 +127,15 @@ export const useMatchStore = defineStore('matches', {
       this.decisions[id] = { ...decision, timestamp: Date.now() };
     },
     undoDecision(id: string) {
-      delete this.decisions[id];
+      const newDecisions = { ...this.decisions };
+      delete newDecisions[id];
+      this.decisions = newDecisions;
+    },
+    resetAll() {
+      if (confirm('Clear all triage decisions? This cannot be undone.')) {
+        this.decisions = {};
+        this.selectedMatchId = null;
+      }
     },
   },
 });
