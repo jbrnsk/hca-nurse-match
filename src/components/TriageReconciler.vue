@@ -67,6 +67,10 @@ watch(
   async (newId) => {
     if (!newId) return;
 
+    if (window.innerWidth<1024>) {
+      return;
+    }
+
     await nextTick();
 
     if (!containerRef.value) {
