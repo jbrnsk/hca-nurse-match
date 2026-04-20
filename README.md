@@ -35,8 +35,9 @@ The UI supports native Light and Dark modes, inheriting settings directly from t
 
 * **Modern Stack:** Built with Vue 3, Vite, and Tailwind CSS.
 * **Package Management:** Utilizes **pnpm** for fast, disk-efficient dependency management.
-* **Type Safety & Linting:** * **TypeScript:** Strictly typed data structures for hospital and clinic records.
-    * **ESLint & Prettier:** Standardized linting and formatting for code maintainability.
+* **Type Safety & Linting:** 
+    * **TypeScript:** Strictly typed data structures for hospital and clinic records.
+    * **Pre-commit Hooks:** Integrated **Husky** and **lint-staged** to enforce **ESLint** and **Prettier** standards automatically before every commit.
 * **State Management:** Pinia with persistent storage for robust session handling.
 * **Device Optimization:** Fully responsive and optimized for high-density Desktop and Tablet workstations.
 
