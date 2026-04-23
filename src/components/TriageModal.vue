@@ -24,7 +24,6 @@ watch(
       await nextTick();
 
       if (cardRef.value) {
-        // 3. Wait for the browser's paint cycle to be ready
         requestAnimationFrame(() => {
           let elementToFocus: HTMLElement | null = null;
 
@@ -49,7 +48,6 @@ watch(
 
 const handleConfirm = () => {
   if (props.mode === 'rejected' && !reason.value) return;
-  console.log('confirmed!', reason.value, note.value);
   emit('confirm', { status: props.mode, reason: reason.value, note: note.value });
 };
 </script>
@@ -104,7 +102,6 @@ const handleConfirm = () => {
                   reason === 'Not the same person'
                     ? 'border-danger bg-danger/5 ring-danger ring-1'
                     : 'border-border hover:bg-slate-50 dark:hover:bg-slate-800',
-                  // This is the magic: if the child input is focused via keyboard, style the label
                   'has-[:focus-visible]:ring-brand has-[:focus-visible]:border-brand has-[:focus-visible]:ring-2',
                 ]"
               >

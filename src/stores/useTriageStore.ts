@@ -127,7 +127,6 @@ export const useTriageStore = defineStore('matches', () => {
     status: TriageStatus,
     details?: { reason?: string; note?: string }
   ) {
-    console.log('i truly do not understand what it do', details);
     decisions.value[id] = {
       status,
       reason: details?.reason,
